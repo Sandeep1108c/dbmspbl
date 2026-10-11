@@ -1,7 +1,7 @@
 """
 Database management module for Library Circulation and Digital Resource Management System.
-Supports MySQL Server (default localhost:3306) with seamless automatic fallback to SQLite.
-Zero em dashes used anywhere in this file or system.
+Configured for MySQL 8.4 Server with cloud secrets support and transparent fallback.
+STRICT REQUIREMENT: ZERO em dashes and ZERO en dashes in this file.
 """
 
 import os
@@ -9,14 +9,27 @@ import sqlite3
 from datetime import datetime, date, timedelta
 import pandas as pd
 
-# Database configuration
+# Default MySQL configuration
 MYSQL_CONFIG = {
     'host': 'localhost',
     'port': 3306,
     'user': 'root',
     'password': 'Sandeep@123',
-    'database': 'library_pbl_db'
+    'database': 'dbms_project'
 }
+
+# Check for Streamlit Cloud secrets if available
+try:
+    import streamlit as st
+    if hasattr(st, 'secrets') and 'mysql' in st.secrets:
+        sec = st.secrets['mysql']
+        MYSQL_CONFIG['host'] = sec.get('host', MYSQL_CONFIG['host'])
+        MYSQL_CONFIG['port'] = int(sec.get('port', MYSQL_CONFIG['port']))
+        MYSQL_CONFIG['user'] = sec.get('user', MYSQL_CONFIG['user'])
+        MYSQL_CONFIG['password'] = sec.get('password', MYSQL_CONFIG['password'])
+        MYSQL_CONFIG['database'] = sec.get('database', MYSQL_CONFIG['database'])
+except Exception:
+    pass
 
 SQLITE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'library_system.db')
 
@@ -39,10 +52,10 @@ class DatabaseManager:
                 port=MYSQL_CONFIG['port'],
                 user=MYSQL_CONFIG['user'],
                 password=MYSQL_CONFIG['password'],
-                connect_timeout=2
+                connect_timeout=3
             )
             cursor = conn.cursor()
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {MYSQL_CONFIG['database']};")
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{MYSQL_CONFIG['database']}`;")
             conn.commit()
             cursor.close()
             conn.close()
@@ -85,6 +98,9 @@ class DatabaseManager:
                     return cursor.lastrowid
             else:
                 cursor = conn.cursor()
+                # Adapt %s placeholder to ? for sqlite driver
+                if params and '%s' in query:
+                    query = query.replace('%s', '?')
                 cursor.execute(query, params or ())
                 if query.strip().upper().startswith(('SELECT', 'SHOW', 'DESCRIBE', 'PRAGMA')):
                     rows = cursor.fetchall()
@@ -98,12 +114,14 @@ class DatabaseManager:
     def query_df(self, query, params=None):
         conn = self.get_connection()
         try:
+            if self.engine_type != 'mysql' and params and '%s' in query:
+                query = query.replace('%s', '?')
             return pd.read_sql_query(query, conn, params=params)
         finally:
             conn.close()
 
     def init_database(self):
-        """Initializes tables in the active database engine."""
+        """Initializes all 14 relational tables."""
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -284,13 +302,12 @@ class DatabaseManager:
         conn.close()
 
     def seed_data(self):
-        """Populates comprehensive realistic test data across all tables."""
-        # Check if already seeded
+        """Populates test data across all tables."""
         try:
             res = self.execute_query("SELECT COUNT(*) AS c FROM Book")
             count = res[0]['c'] if res else 0
             if count > 0:
-                return False  # Already seeded
+                return False
         except Exception:
             pass
 
@@ -307,8 +324,7 @@ class DatabaseManager:
         ]
         for fn, ln, bio in authors:
             self.execute_query(
-                "INSERT INTO Author (FirstName, LastName, Bio) VALUES (%s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Author (FirstName, LastName, Bio) VALUES (?, ?, ?)",
+                "INSERT INTO Author (FirstName, LastName, Bio) VALUES (%s, %s, %s)",
                 (fn, ln, bio)
             )
 
@@ -322,8 +338,7 @@ class DatabaseManager:
         ]
         for name, addr, phone, email in publishers:
             self.execute_query(
-                "INSERT INTO Publisher (Name, Address, Phone, Email) VALUES (%s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Publisher (Name, Address, Phone, Email) VALUES (?, ?, ?, ?)",
+                "INSERT INTO Publisher (Name, Address, Phone, Email) VALUES (%s, %s, %s, %s)",
                 (name, addr, phone, email)
             )
 
@@ -338,8 +353,7 @@ class DatabaseManager:
         ]
         for name, desc in categories:
             self.execute_query(
-                "INSERT INTO Category (Name, Description) VALUES (%s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Category (Name, Description) VALUES (?, ?)",
+                "INSERT INTO Category (Name, Description) VALUES (%s, %s)",
                 (name, desc)
             )
 
@@ -356,8 +370,7 @@ class DatabaseManager:
         ]
         for isbn, title, lang, pages, year in books:
             self.execute_query(
-                "INSERT INTO Book (ISBN, Title, Language, TotalPages, PublicationYear) VALUES (%s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Book (ISBN, Title, Language, TotalPages, PublicationYear) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO Book (ISBN, Title, Language, TotalPages, PublicationYear) VALUES (%s, %s, %s, %s, %s)",
                 (isbn, title, lang, pages, year)
             )
 
@@ -374,24 +387,22 @@ class DatabaseManager:
         ]
         for b_id, a_id in ba_map:
             self.execute_query(
-                "INSERT INTO BookAuthor (BookID, AuthorID) VALUES (%s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO BookAuthor (BookID, AuthorID) VALUES (?, ?)",
+                "INSERT INTO BookAuthor (BookID, AuthorID) VALUES (%s, %s)",
                 (b_id, a_id)
             )
 
         # Book-Category mappings
         bc_map = [
-            (1, 1), (2, 1),  # Database Systems
-            (3, 2), (4, 2),  # Software Engineering
-            (5, 3),          # Networks
-            (6, 4),          # Algorithms
-            (7, 1), (7, 2),  # Data-Intensive (DB + SE)
-            (8, 2)           # C Programming (SE)
+            (1, 1), (2, 1),
+            (3, 2), (4, 2),
+            (5, 3),
+            (6, 4),
+            (7, 1), (7, 2),
+            (8, 2)
         ]
         for b_id, c_id in bc_map:
             self.execute_query(
-                "INSERT INTO BookCategory (BookID, CategoryID) VALUES (%s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO BookCategory (BookID, CategoryID) VALUES (?, ?)",
+                "INSERT INTO BookCategory (BookID, CategoryID) VALUES (%s, %s)",
                 (b_id, c_id)
             )
 
@@ -408,8 +419,7 @@ class DatabaseManager:
         ]
         for b_id, ed_no, pub_id, p_date, fmt in editions:
             self.execute_query(
-                "INSERT INTO Edition (BookID, EditionNumber, PublisherID, PublicationDate, Format) VALUES (%s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Edition (BookID, EditionNumber, PublisherID, PublicationDate, Format) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO Edition (BookID, EditionNumber, PublisherID, PublicationDate, Format) VALUES (%s, %s, %s, %s, %s)",
                 (b_id, ed_no, pub_id, p_date, fmt)
             )
 
@@ -433,8 +443,7 @@ class DatabaseManager:
         ]
         for acc, ed_id, status, shelf, dt in copies:
             self.execute_query(
-                "INSERT INTO Copy (AccessionNumber, EditionID, Status, ShelfLocation, DateAcquired) VALUES (%s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Copy (AccessionNumber, EditionID, Status, ShelfLocation, DateAcquired) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO Copy (AccessionNumber, EditionID, Status, ShelfLocation, DateAcquired) VALUES (%s, %s, %s, %s, %s)",
                 (acc, ed_id, status, shelf, dt)
             )
 
@@ -450,29 +459,22 @@ class DatabaseManager:
         ]
         for fn, ln, em, ph, ad, mt, sd, ed, mb, ia in members:
             self.execute_query(
-                "INSERT INTO Member (FirstName, LastName, Email, Phone, Address, MembershipType, MembershipStartDate, MembershipEndDate, MaxBooksAllowed, IsActive) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Member (FirstName, LastName, Email, Phone, Address, MembershipType, MembershipStartDate, MembershipEndDate, MaxBooksAllowed, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO Member (FirstName, LastName, Email, Phone, Address, MembershipType, MembershipStartDate, MembershipEndDate, MaxBooksAllowed, IsActive) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 (fn, ln, em, ph, ad, mt, sd, ed, mb, ia)
             )
 
-        # Issues (Active, Returned, and Overdue)
+        # Issues
         today = date.today()
         issues = [
-            # Issue 1: Returned normally
             (1, 1, str(today - timedelta(days=25)), str(today - timedelta(days=11)), str(today - timedelta(days=12)), "Returned"),
-            # Issue 2: Active, within due date
             (2, 2, str(today - timedelta(days=5)), str(today + timedelta(days=9)), None, "Active"),
-            # Issue 3: Active and Overdue
             (6, 4, str(today - timedelta(days=22)), str(today - timedelta(days=8)), None, "Overdue"),
-            # Issue 4: Active and Overdue
             (8, 1, str(today - timedelta(days=30)), str(today - timedelta(days=16)), None, "Overdue"),
-            # Issue 5: Active, faculty member
             (10, 3, str(today - timedelta(days=10)), str(today + timedelta(days=20)), None, "Active")
         ]
         for c_id, m_id, idt, ddt, rdt, st in issues:
             self.execute_query(
-                "INSERT INTO Issue (CopyID, MemberID, IssueDate, DueDate, ReturnDate, Status) VALUES (%s, %s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Issue (CopyID, MemberID, IssueDate, DueDate, ReturnDate, Status) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO Issue (CopyID, MemberID, IssueDate, DueDate, ReturnDate, Status) VALUES (%s, %s, %s, %s, %s, %s)",
                 (c_id, m_id, idt, ddt, rdt, st)
             )
 
@@ -484,8 +486,7 @@ class DatabaseManager:
         ]
         for i_id, m_id, amt, rsn, fdt, pdt, st in fines:
             self.execute_query(
-                "INSERT INTO Fine (IssueID, MemberID, Amount, Reason, FineDate, PaidDate, Status) VALUES (%s, %s, %s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Fine (IssueID, MemberID, Amount, Reason, FineDate, PaidDate, Status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO Fine (IssueID, MemberID, Amount, Reason, FineDate, PaidDate, Status) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (i_id, m_id, amt, rsn, fdt, pdt, st)
             )
 
@@ -496,8 +497,7 @@ class DatabaseManager:
         ]
         for b_id, m_id, rdt, qp, st, exp in reservations:
             self.execute_query(
-                "INSERT INTO Reservation (BookID, MemberID, ReservationDate, QueuePosition, Status, ExpiryDate) VALUES (%s, %s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO Reservation (BookID, MemberID, ReservationDate, QueuePosition, Status, ExpiryDate) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO Reservation (BookID, MemberID, ReservationDate, QueuePosition, Status, ExpiryDate) VALUES (%s, %s, %s, %s, %s, %s)",
                 (b_id, m_id, rdt, qp, st, exp)
             )
 
@@ -510,8 +510,7 @@ class DatabaseManager:
         ]
         for b_id, rt, ff, fs, url, udt in resources:
             self.execute_query(
-                "INSERT INTO DigitalResource (BookID, ResourceType, FileFormat, FileSize, URL, UploadDate) VALUES (%s, %s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO DigitalResource (BookID, ResourceType, FileFormat, FileSize, URL, UploadDate) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO DigitalResource (BookID, ResourceType, FileFormat, FileSize, URL, UploadDate) VALUES (%s, %s, %s, %s, %s, %s)",
                 (b_id, rt, ff, fs, url, udt)
             )
 
@@ -524,14 +523,12 @@ class DatabaseManager:
         ]
         for r_id, m_id, adt, atp, ip in logs:
             self.execute_query(
-                "INSERT INTO DigitalAccessLog (ResourceID, MemberID, AccessDate, AccessType, IPAddress) VALUES (%s, %s, %s, %s, %s)" if self.engine_type == 'mysql'
-                else "INSERT INTO DigitalAccessLog (ResourceID, MemberID, AccessDate, AccessType, IPAddress) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO DigitalAccessLog (ResourceID, MemberID, AccessDate, AccessType, IPAddress) VALUES (%s, %s, %s, %s, %s)",
                 (r_id, m_id, adt, atp, ip)
             )
 
         return True
 
-# Singleton instance helper
 _db_instance = None
 
 def get_db():

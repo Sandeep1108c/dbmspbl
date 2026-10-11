@@ -166,21 +166,17 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # Engine Badge Container
-    engine_name = "MySQL 8.4 Server" if db.engine_type == "mysql" else "SQLite 3 Database"
-    engine_icon = "🟢" if db.engine_type == "mysql" else "🔵"
-    st.info(f"**Engine:** {engine_icon} {engine_name}")
+    st.markdown("""
+    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;">
+        <div style="font-size: 0.75rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.05em;">DATABASE ENGINE</div>
+        <div style="font-size: 0.95rem; font-weight: 700; color: #15803D; margin-top: 2px;">🟢 MySQL 8.4 Server</div>
+        <div style="font-size: 0.75rem; color: #4ADE80; margin-top: 2px;">Port 3306 : dbms_project</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("🔄 Sync", help="Re-check database connection", use_container_width=True):
-            db = database.DatabaseManager(force_sqlite=(db.engine_type != "mysql"))
-            st.rerun()
-    with col_btn2:
-        btn_label = "MySQL" if db.engine_type == "sqlite" else "SQLite"
-        if st.button(btn_label, help=f"Toggle to {btn_label}", use_container_width=True):
-            db.force_sqlite = not db.force_sqlite
-            db._check_mysql()
-            st.rerun()
+    if st.button("🔄 Refresh MySQL Connection", use_container_width=True):
+        db._check_mysql()
+        st.rerun()
 
     st.markdown("<hr style='margin: 14px 0; border: none; border-top: 1px solid #E2E8F0;'>", unsafe_allow_html=True)
 
@@ -206,7 +202,7 @@ with st.sidebar:
 
 # Hero Banner Header on all pages
 def render_hero(title, subtitle):
-    engine_badge = '<span class="badge-pill badge-emerald">MySQL Active</span>' if db.engine_type == "mysql" else '<span class="badge-pill badge-blue">SQLite Standalone</span>'
+    engine_badge = '<span class="badge-pill badge-emerald">MySQL 8.4 Database Active</span>'
     today_str = date.today().strftime("%B %d, %Y")
     st.markdown(f"""
     <div class="hero-container">
@@ -408,15 +404,13 @@ elif nav_option == "📚 Catalogue & Inventory":
             LEFT JOIN Copy cp ON e.EditionID = cp.EditionID
             WHERE 1=1
         """
-        params = []
         if search_query:
-            sql_search += """ AND (b.Title LIKE %s OR b.ISBN LIKE %s OR a.FirstName LIKE %s OR a.LastName LIKE %s)""" if db.engine_type == 'mysql' else """ AND (b.Title LIKE ? OR b.ISBN LIKE ? OR a.FirstName LIKE ? OR a.LastName LIKE ?)"""
-            sq = f"%{search_query}%"
-            params.extend([sq, sq, sq, sq])
+            sq = search_query.replace("'", "''")
+            sql_search += f" AND (b.Title LIKE '%{sq}%' OR b.ISBN LIKE '%{sq}%' OR a.FirstName LIKE '%{sq}%' OR a.LastName LIKE '%{sq}%')"
 
         sql_search += " GROUP BY b.BookID, b.ISBN, b.Title, b.Language, b.TotalPages, b.PublicationYear"
 
-        catalog_df = db.query_df(sql_search, params=params)
+        catalog_df = db.query_df(sql_search)
         if cat_filter != "All Categories":
             catalog_df = catalog_df[catalog_df['Categories'].str.contains(cat_filter, na=False)]
 
@@ -454,14 +448,14 @@ elif nav_option == "📚 Catalogue & Inventory":
             selected_book_title = st.selectbox("Select Book to Locate Physical Copies:", list(book_options.keys()))
             selected_b_id = book_options[selected_book_title]
 
-            copies_df = db.query_df("""
+            copies_df = db.query_df(f"""
                 SELECT cp.CopyID, cp.AccessionNumber AS Barcode, e.EditionNumber AS Edition,
                        p.Name AS Publisher, e.Format, cp.ShelfLocation, cp.Status, cp.DateAcquired
                 FROM Copy cp
                 JOIN Edition e ON cp.EditionID = e.EditionID
                 JOIN Publisher p ON e.PublisherID = p.PublisherID
-                WHERE e.BookID = ? OR e.BookID = %s
-            """.replace("?", "%s" if db.engine_type == 'mysql' else "?"), (selected_b_id,))
+                WHERE e.BookID = {int(selected_b_id)}
+            """)
 
             st.dataframe(copies_df, width="stretch", hide_index=True)
 
