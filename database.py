@@ -45,25 +45,37 @@ class DatabaseManager:
             self.engine_type = 'sqlite'
             return
 
-        try:
-            import pymysql
-            conn = pymysql.connect(
-                host=MYSQL_CONFIG['host'],
-                port=MYSQL_CONFIG['port'],
-                user=MYSQL_CONFIG['user'],
-                password=MYSQL_CONFIG['password'],
-                connect_timeout=3
-            )
-            cursor = conn.cursor()
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{MYSQL_CONFIG['database']}`;")
-            conn.commit()
-            cursor.close()
-            conn.close()
-            self.mysql_available = True
-            self.engine_type = 'mysql'
-        except Exception:
-            self.mysql_available = False
-            self.engine_type = 'sqlite'
+        passwords_to_try = [
+            MYSQL_CONFIG['password'],
+            '',              # XAMPP Apache MySQL default
+            'Sandeep@123',   # MySQL84 password
+            'root'
+        ]
+
+        import pymysql
+        for pwd in passwords_to_try:
+            try:
+                conn = pymysql.connect(
+                    host=MYSQL_CONFIG['host'],
+                    port=MYSQL_CONFIG['port'],
+                    user=MYSQL_CONFIG['user'],
+                    password=pwd,
+                    connect_timeout=2
+                )
+                cursor = conn.cursor()
+                cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{MYSQL_CONFIG['database']}`;")
+                conn.commit()
+                cursor.close()
+                conn.close()
+                MYSQL_CONFIG['password'] = pwd
+                self.mysql_available = True
+                self.engine_type = 'mysql'
+                return
+            except Exception:
+                continue
+
+        self.mysql_available = False
+        self.engine_type = 'sqlite'
 
     def get_connection(self):
         if self.engine_type == 'mysql' and self.mysql_available:
