@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Notes — DBMS PBL</title>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --bg: #ffffff;
+    --text: #1a1a2e;
+    --heading: #0f0f23;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --border: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --table-header: #1e293b;
+    --table-stripe: #f8fafc;
+    --blockquote-bg: #f0f9ff;
+    --blockquote-border: #3b82f6;
+    --tip-bg: #f0fdf4;
+    --tip-border: #22c55e;
+    --note-bg: #eff6ff;
+    --note-border: #3b82f6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11pt;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    padding: 40px 50px;
+    max-width: 100%;
+}
+
+h1 {
+    font-size: 22pt;
+    font-weight: 800;
+    color: var(--heading);
+    margin-top: 30px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid var(--accent);
+    page-break-after: avoid;
+}
+
+h2 {
+    font-size: 16pt;
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 28px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1.5px solid var(--border);
+    page-break-after: avoid;
+}
+
+h3 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--heading);
+    margin-top: 20px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+}
+
+h4 {
+    font-size: 11.5pt;
+    font-weight: 600;
+    color: #475569;
+    margin-top: 16px;
+    margin-bottom: 6px;
+}
+
+p {
+    margin-bottom: 10px;
+}
+
+strong {
+    font-weight: 600;
+    color: var(--heading);
+}
+
+em {
+    font-style: italic;
+    color: #475569;
+}
+
+blockquote {
+    background: var(--blockquote-bg);
+    border-left: 4px solid var(--blockquote-border);
+    padding: 12px 18px;
+    margin: 14px 0;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #334155;
+}
+
+blockquote p {
+    margin-bottom: 4px;
+}
+
+/* GitHub-style alerts */
+blockquote:has(p:first-child strong:first-child) {
+    font-style: normal;
+}
+
+ul, ol {
+    margin: 8px 0 12px 24px;
+}
+
+li {
+    margin-bottom: 5px;
+}
+
+li strong {
+    color: var(--accent);
+}
+
+code {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 9.5pt;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #be185d;
+}
+
+pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 14px 0;
+    overflow-x: auto;
+    font-size: 9pt;
+    line-height: 1.6;
+    page-break-inside: avoid;
+}
+
+pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 10pt;
+    page-break-inside: avoid;
+}
+
+thead {
+    background: var(--table-header);
+    color: white;
+}
+
+th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+tbody tr:nth-child(even) {
+    background: var(--table-stripe);
+}
+
+tbody tr:hover {
+    background: var(--accent-light);
+}
+
+hr {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 30px 0;
+}
+
+/* Page break hints */
+h1, h2 {
+    page-break-after: avoid;
+}
+
+table, pre, blockquote {
+    page-break-inside: avoid;
+}
+
+/* Print styles */
+@media print {
+    body {
+        padding: 20px 30px;
+        font-size: 10.5pt;
+    }
+    
+    pre {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    thead {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    tbody tr:nth-child(even) {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+@page {
+    size: A4;
+    margin: 20mm 15mm;
+}
+</style>
+</head>
+<body>
+<h1 id="presentation-notes-dbms-pbl">📋 Presentation Notes — DBMS PBL</h1>
+<h2 id="library-circulation-digital-resource-management-system">Library Circulation &amp; Digital Resource Management System</h2>
+<blockquote>
+<p>These are your reference notes. Read through them before the presentation so you can explain each topic confidently in your own words.</p>
+</blockquote>
+<hr />
+<h1 id="part-1-problem-statement">🔴 PART 1: PROBLEM STATEMENT</h1>
+<h2 id="the-one-line-summary">The One-Line Summary</h2>
+<blockquote>
+<p>"Libraries still run on registers and spreadsheets. That causes lost books, wrong fines, unfair reservations, and zero tracking of digital content. We're building a proper database to fix all of that."</p>
+</blockquote>
+<h2 id="whats-actually-wrong-the-5-core-problems">What's Actually Wrong? (The 5 Core Problems)</h2>
+<h3 id="1-books-get-lost-because-tracking-is-manual">1. Books Get Lost Because Tracking is Manual</h3>
+<ul>
+<li>Librarians write entries in a physical register or an Excel sheet.</li>
+<li>When a book is moved, returned, or misplaced — <strong>nobody updates the record in real time</strong>.</li>
+<li>Result: You go to the shelf, the book isn't there, and nobody knows where it went.</li>
+</ul>
+<h3 id="2-digital-resources-are-completely-ignored">2. Digital Resources Are Completely Ignored</h3>
+<ul>
+<li>Modern libraries have <strong>e-books, e-journals, audiobooks</strong> — not just physical books.</li>
+<li>Old systems have <strong>no way</strong> to catalog, track access, or even store metadata for these.</li>
+<li>Result: The library owns digital content but can't tell you who's using it or how popular it is.</li>
+</ul>
+<h3 id="3-fines-are-calculated-by-hand-mistakes-arguments">3. Fines Are Calculated by Hand = Mistakes &amp; Arguments</h3>
+<ul>
+<li>A librarian has to manually count overdue days, look up the fine rate, and calculate the amount.</li>
+<li>This is <strong>error-prone</strong> — sometimes a student gets overcharged, sometimes undercharged.</li>
+<li>Result: Disputes, wasted time, and inconsistent enforcement.</li>
+</ul>
+<h3 id="4-reservations-are-chaotic">4. Reservations Are Chaotic</h3>
+<ul>
+<li>If 5 people want the same popular book, there's no fair queuing system.</li>
+<li>Who gets notified first? Who's been waiting longest? — <strong>Nobody knows</strong>.</li>
+<li>Result: The person who happens to check in at the right time gets the book, not the person who reserved first.</li>
+</ul>
+<h3 id="5-data-is-duplicated-everywhere">5. Data is Duplicated Everywhere</h3>
+<ul>
+<li>The same member's info might be in the issue register, the fine register, and the membership register — <strong>three different places</strong>.</li>
+<li>If their phone number changes, it gets updated in one place but not the others.</li>
+<li>Result: <strong>Data redundancy</strong> (wasted storage) and <strong>data inconsistency</strong> (conflicting info).</li>
+</ul>
+<h2 id="how-our-database-solves-each-problem">How Our Database Solves Each Problem</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Problem</th>
+<th style="text-align: left;">Our Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Books get lost</td>
+<td style="text-align: left;">Every physical copy has a unique <code>AccessionNumber</code> and a <code>Status</code> field (Available / Issued / Lost / Damaged). Real-time tracking.</td>
+</tr>
+<tr>
+<td style="text-align: left;">No digital resource tracking</td>
+<td style="text-align: left;">Dedicated <code>DigitalResource</code> and <code>DigitalAccessLog</code> tables to catalog and track every access.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Manual fine calculation</td>
+<td style="text-align: left;"><code>Fine</code> table with <code>CHECK (Amount &gt;= 0)</code>, linked to <code>Issue</code> records. Can be automated with triggers.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Unfair reservations</td>
+<td style="text-align: left;"><code>Reservation</code> table with <code>QueuePosition</code> field — strict FIFO (first come, first served).</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data duplication</td>
+<td style="text-align: left;"><strong>Normalized schema</strong> (3NF) — each piece of info is stored in exactly one place. Foreign keys link everything.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-explain-this-in-the-presentation">💬 How to Explain This in the Presentation</h2>
+<blockquote>
+<p><em>"The core problem we identified is that traditional library systems rely on manual processes — physical registers, spreadsheets, and human memory. This leads to five key issues: unreliable book tracking, no management of digital resources, error-prone fine calculations, chaotic reservation queues, and rampant data duplication. Our database system addresses each of these by centralizing all data in a properly normalized relational schema with strict constraints."</em></p>
+</blockquote>
+<hr />
+<h1 id="part-2-er-diagram">🟢 PART 2: ER DIAGRAM</h1>
+<h2 id="what-is-an-er-diagram-quick-refresher">What is an ER Diagram? (Quick Refresher)</h2>
+<ul>
+<li><strong>ER = Entity-Relationship</strong></li>
+<li>It's a <strong>visual blueprint</strong> of your database before you write any SQL.</li>
+<li>Shows: <strong>Entities</strong> (things you store data about), <strong>Attributes</strong> (properties of those things), <strong>Relationships</strong> (how things connect).</li>
+</ul>
+<h2 id="our-entities-what-are-they-and-why-do-we-need-them">Our Entities — What Are They and Why Do We Need Them?</h2>
+<h3 id="the-core-chain-book-edition-copy">The Core Chain: Book → Edition → Copy</h3>
+<p>Think of it like this:</p>
+<pre class="codehilite"><code>&quot;Harry Potter&quot; (Book)
+   └── 1st Edition, Bloomsbury (Edition)
+   │      └── Copy #001 on Shelf A3 (Copy)
+   │      └── Copy #002 on Shelf A3 (Copy)
+   └── 2nd Edition, Scholastic (Edition)
+          └── Copy #003 on Shelf B1 (Copy)
+</code></pre>
+
+<ul>
+<li><strong>Book</strong> = The <em>abstract concept</em> of a book. Stores title, ISBN, language, etc.</li>
+<li><strong>Edition</strong> = A <em>specific version</em> of that book (1st edition by Publisher X, 2nd edition by Publisher Y).</li>
+<li><strong>Copy</strong> = A <em>physical item</em> sitting on a shelf. This is what a student actually borrows.</li>
+</ul>
+<blockquote>
+<p><strong>Why three tables instead of one?</strong> Because one book can have multiple editions, and each edition can have multiple copies. If you cram all this into one table, you get massive data duplication.</p>
+</blockquote>
+<h3 id="the-people-member">The People: Member</h3>
+<ul>
+<li><strong>Member</strong> = Anyone registered at the library (Student, Faculty, External).</li>
+<li>Tracks their name, email, membership type, start/end dates, and how many books they're allowed to borrow simultaneously (<code>MaxBooksAllowed</code>).</li>
+</ul>
+<h3 id="the-actions-issue-reservation-fine">The Actions: Issue, Reservation, Fine</h3>
+<ul>
+<li><strong>Issue</strong> = "Member X borrowed Copy Y on this date, due on that date." This is the core <em>circulation transaction</em>.</li>
+<li><strong>Reservation</strong> = "Member X wants Book Y, but all copies are out. They're #3 in the queue."</li>
+<li><strong>Fine</strong> = "Member X returned an issue late, so they owe ₹50." Linked to the specific Issue that caused it.</li>
+</ul>
+<h3 id="the-support-cast-author-publisher-category">The Support Cast: Author, Publisher, Category</h3>
+<ul>
+<li><strong>Author</strong> = Stores author info. Connected to Books via a <strong>junction table</strong> (BookAuthor) because one book can have many authors and one author can write many books (<strong>M:N</strong>).</li>
+<li><strong>Publisher</strong> = Connected to Edition (not Book!) because different editions can have different publishers.</li>
+<li><strong>Category</strong> = Fiction, Science, History, etc. Also M:N with Book (a book can belong to multiple categories).</li>
+</ul>
+<h3 id="the-digital-side-digitalresource-digitalaccesslog">The Digital Side: DigitalResource, DigitalAccessLog</h3>
+<ul>
+<li><strong>DigitalResource</strong> = An e-book, audiobook, or e-journal version of a Book. Stores URL, file format, file size.</li>
+<li><strong>DigitalAccessLog</strong> = Every time a member views or downloads a digital resource, it's logged here with timestamp and IP address.</li>
+</ul>
+<h2 id="relationships-how-everything-connects">Relationships — How Everything Connects</h2>
+<h3 id="key-relationships-to-explain">Key Relationships to Explain</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Relationship</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Plain English</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Book → Author</td>
+<td style="text-align: left;"><strong>Many-to-Many</strong></td>
+<td style="text-align: left;">A book can have multiple authors. An author can write multiple books. Resolved via <code>BookAuthor</code> junction table.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Book → Category</td>
+<td style="text-align: left;"><strong>Many-to-Many</strong></td>
+<td style="text-align: left;">A book can be in multiple categories. A category has multiple books. Resolved via <code>BookCategory</code> junction table.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Book → Edition</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">One book can have many editions (1st, 2nd, 3rd...).</td>
+</tr>
+<tr>
+<td style="text-align: left;">Edition → Publisher</td>
+<td style="text-align: left;"><strong>Many-to-One</strong></td>
+<td style="text-align: left;">Many editions can come from the same publisher.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Edition → Copy</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">One edition can have multiple physical copies in the library.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Copy → Issue</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">A copy can be issued many times (over its lifetime), but only <strong>one active issue at a time</strong>.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Member → Issue</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">A member can borrow many copies over time.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Member → Reservation</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">A member can reserve multiple books.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Book → Reservation</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">A popular book can have multiple people waiting for it.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Issue → Fine</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">One issue can generate multiple fines (e.g., overdue + damaged).</td>
+</tr>
+<tr>
+<td style="text-align: left;">Book → DigitalResource</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">One book can have an e-book version, an audiobook, etc.</td>
+</tr>
+<tr>
+<td style="text-align: left;">DigitalResource → DigitalAccessLog</td>
+<td style="text-align: left;"><strong>One-to-Many</strong></td>
+<td style="text-align: left;">One resource can be accessed hundreds of times.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="whats-a-junction-table">What's a Junction Table?</h3>
+<ul>
+<li>When two entities have a <strong>Many-to-Many</strong> relationship, you can't directly represent it in a relational database.</li>
+<li>You create a <strong>junction table</strong> (also called bridge/associative table) that sits between them.</li>
+<li>Example: <code>BookAuthor</code> has two columns — <code>BookID</code> (FK → Book) and <code>AuthorID</code> (FK → Author). Together they form a <strong>composite primary key</strong>.</li>
+</ul>
+<h3 id="participation-constraints-if-asked">Participation Constraints (If Asked)</h3>
+<p><strong>Total Participation</strong> (MUST exist):<br />
+- Every Copy MUST belong to an Edition<br />
+- Every Issue MUST link to a Copy AND a Member<br />
+- Every Fine MUST link to an Issue AND a Member</p>
+<p><strong>Partial Participation</strong> (MAY exist):<br />
+- A Member MAY or MAY NOT have any Issues (they could just be registered)<br />
+- A Book MAY or MAY NOT have a DigitalResource (print-only books)<br />
+- A Copy MAY or MAY NOT be issued (could be sitting on the shelf)</p>
+<h2 id="how-to-explain-the-er-diagram-in-the-presentation">💬 How to Explain the ER Diagram in the Presentation</h2>
+<blockquote>
+<p><em>"Our ER model has 14 entities. The core flow is: a Book has Editions, each Edition has physical Copies, and Copies are what get Issued to Members. Alongside this, we track Reservations at the Book level, Fines at the Issue level, and digital content through DigitalResource with access logging. We handle many-to-many relationships like Book-Author and Book-Category through junction tables."</em></p>
+</blockquote>
+<hr />
+<h1 id="part-3-relational-schema">🔵 PART 3: RELATIONAL SCHEMA</h1>
+<h2 id="what-is-a-relational-schema-quick-refresher">What is a Relational Schema? (Quick Refresher)</h2>
+<ul>
+<li>The ER Diagram is the <strong>conceptual design</strong> (what entities exist and how they relate).</li>
+<li>The Relational Schema is the <strong>logical design</strong> (how you'll actually create tables in a database).</li>
+<li>It specifies: <strong>table names, column names, data types, primary keys, foreign keys, constraints</strong>.</li>
+</ul>
+<h2 id="how-to-read-the-schema-notation">How to Read the Schema Notation</h2>
+<pre class="codehilite"><code>Book(BookID, ISBN, Title, Language, TotalPages, PublicationYear)
+</code></pre>
+
+<ul>
+<li><strong>Bold</strong> = Primary Key (e.g., <strong>BookID</strong>)</li>
+<li><em>Italic</em> = Foreign Key (e.g., <em>BookID</em> in Edition table references Book)</li>
+<li><strong><em>Bold Italic</em></strong> = Both PK and FK (e.g., in junction tables like BookAuthor)</li>
+</ul>
+<h2 id="our-14-tables-quick-reference">Our 14 Tables — Quick Reference</h2>
+<h3 id="independent-tables-no-foreign-keys">Independent Tables (No Foreign Keys)</h3>
+<p>These tables don't depend on any other table:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Table</th>
+<th style="text-align: left;">Primary Key</th>
+<th style="text-align: left;">Key Columns</th>
+<th style="text-align: left;">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Book</strong></td>
+<td style="text-align: left;">BookID</td>
+<td style="text-align: left;">ISBN (UNIQUE)</td>
+<td style="text-align: left;">Core catalog of all books</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Author</strong></td>
+<td style="text-align: left;">AuthorID</td>
+<td style="text-align: left;">FirstName, LastName</td>
+<td style="text-align: left;">Author information</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Publisher</strong></td>
+<td style="text-align: left;">PublisherID</td>
+<td style="text-align: left;">Name (UNIQUE)</td>
+<td style="text-align: left;">Publisher details</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Category</strong></td>
+<td style="text-align: left;">CategoryID</td>
+<td style="text-align: left;">Name (UNIQUE)</td>
+<td style="text-align: left;">Book categories/genres</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Member</strong></td>
+<td style="text-align: left;">MemberID</td>
+<td style="text-align: left;">Email (UNIQUE)</td>
+<td style="text-align: left;">Library members</td>
+</tr>
+</tbody>
+</table>
+<h3 id="junction-tables-composite-primary-keys">Junction Tables (Composite Primary Keys)</h3>
+<p>These resolve M:N relationships:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Table</th>
+<th style="text-align: left;">Primary Key</th>
+<th style="text-align: left;">Foreign Keys</th>
+<th style="text-align: left;">Resolves</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>BookAuthor</strong></td>
+<td style="text-align: left;">(BookID, AuthorID)</td>
+<td style="text-align: left;">BookID → Book, AuthorID → Author</td>
+<td style="text-align: left;">Book ↔ Author M:N</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>BookCategory</strong></td>
+<td style="text-align: left;">(BookID, CategoryID)</td>
+<td style="text-align: left;">BookID → Book, CategoryID → Category</td>
+<td style="text-align: left;">Book ↔ Category M:N</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dependent-tables-have-foreign-keys">Dependent Tables (Have Foreign Keys)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Table</th>
+<th style="text-align: left;">Primary Key</th>
+<th style="text-align: left;">Foreign Keys</th>
+<th style="text-align: left;">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Edition</strong></td>
+<td style="text-align: left;">EditionID</td>
+<td style="text-align: left;">BookID → Book, PublisherID → Publisher</td>
+<td style="text-align: left;">Specific version of a book</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Copy</strong></td>
+<td style="text-align: left;">CopyID</td>
+<td style="text-align: left;">EditionID → Edition</td>
+<td style="text-align: left;">Physical item on the shelf</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Issue</strong></td>
+<td style="text-align: left;">IssueID</td>
+<td style="text-align: left;">CopyID → Copy, MemberID → Member</td>
+<td style="text-align: left;">Borrowing transaction</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Reservation</strong></td>
+<td style="text-align: left;">ReservationID</td>
+<td style="text-align: left;">BookID → Book, MemberID → Member</td>
+<td style="text-align: left;">Waiting list entry</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Fine</strong></td>
+<td style="text-align: left;">FineID</td>
+<td style="text-align: left;">IssueID → Issue, MemberID → Member</td>
+<td style="text-align: left;">Penalty record</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>DigitalResource</strong></td>
+<td style="text-align: left;">ResourceID</td>
+<td style="text-align: left;">BookID → Book</td>
+<td style="text-align: left;">E-book/audiobook metadata</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>DigitalAccessLog</strong></td>
+<td style="text-align: left;">LogID</td>
+<td style="text-align: left;">ResourceID → DigitalResource, MemberID → Member</td>
+<td style="text-align: left;">Usage tracking</td>
+</tr>
+</tbody>
+</table>
+<h2 id="key-constraints-what-they-mean-and-why-they-matter">Key Constraints — What They Mean and Why They Matter</h2>
+<h3 id="primary-key-pk">Primary Key (PK)</h3>
+<ul>
+<li><strong>What</strong>: Uniquely identifies every row in a table.</li>
+<li><strong>Rule</strong>: Can NEVER be NULL, must be unique.</li>
+<li><strong>Example</strong>: <code>BookID</code> in Book table — no two books share the same ID.</li>
+</ul>
+<h3 id="foreign-key-fk">Foreign Key (FK)</h3>
+<ul>
+<li><strong>What</strong>: A column that references the primary key of another table.</li>
+<li><strong>Why</strong>: Enforces that you can't create an Issue for a CopyID that doesn't exist.</li>
+<li><strong>Example</strong>: <code>Issue.CopyID</code> → <code>Copy.CopyID</code>. You can't issue a copy that isn't in the Copy table.</li>
+</ul>
+<h3 id="unique-constraint">UNIQUE Constraint</h3>
+<ul>
+<li><strong>What</strong>: No two rows can have the same value in this column.</li>
+<li><strong>Different from PK</strong>: A table can have multiple UNIQUE columns, but only one PK.</li>
+<li><strong>Our examples</strong>: <code>Book.ISBN</code>, <code>Copy.AccessionNumber</code>, <code>Member.Email</code>, <code>Publisher.Name</code>, <code>Category.Name</code></li>
+</ul>
+<h3 id="check-constraint">CHECK Constraint</h3>
+<ul>
+<li><strong>What</strong>: A rule that the value must satisfy.</li>
+<li><strong>Our examples</strong>:</li>
+<li><code>Fine.Amount &gt;= 0</code> — fines can't be negative</li>
+<li><code>Book.TotalPages &gt; 0</code> — a book must have at least 1 page</li>
+<li><code>Edition.EditionNumber &gt; 0</code> — edition must be 1st or higher</li>
+<li><code>Reservation.QueuePosition &gt;= 1</code> — queue position starts at 1</li>
+</ul>
+<h3 id="default-values">DEFAULT Values</h3>
+<ul>
+<li><strong>What</strong>: If you insert a row without specifying this column, it gets this value.</li>
+<li><strong>Our examples</strong>:</li>
+<li><code>Copy.Status = 'Available'</code> — new copies start as available</li>
+<li><code>Issue.Status = 'Active'</code> — new issues start as active</li>
+<li><code>Member.IsActive = TRUE</code> — new members are active by default</li>
+</ul>
+<h3 id="on-delete-rules-referential-actions">ON DELETE Rules (Referential Actions)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Rule</th>
+<th style="text-align: left;">Meaning</th>
+<th style="text-align: left;">Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>CASCADE</strong></td>
+<td style="text-align: left;">If parent is deleted, delete the children too</td>
+<td style="text-align: left;">Deleting a Book → automatically deletes its Editions, BookAuthor entries, etc.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>RESTRICT</strong></td>
+<td style="text-align: left;">Block the delete if children exist</td>
+<td style="text-align: left;">Can't delete a Copy if there are Issue records for it</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why different rules?</strong> <br />
+- Use CASCADE for things that make no sense without the parent (a BookAuthor entry has no meaning without the Book).<br />
+- Use RESTRICT when you want to protect history (you shouldn't delete a Copy if issues/fines are recorded against it).</p>
+<h2 id="data-types-cheat-sheet">Data Types Cheat Sheet</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Data Type</th>
+<th style="text-align: left;">What It Stores</th>
+<th style="text-align: left;">Used For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">INT</td>
+<td style="text-align: left;">Whole numbers</td>
+<td style="text-align: left;">IDs, page counts, queue positions</td>
+</tr>
+<tr>
+<td style="text-align: left;">VARCHAR(n)</td>
+<td style="text-align: left;">Text up to n characters</td>
+<td style="text-align: left;">Names, emails, ISBNs</td>
+</tr>
+<tr>
+<td style="text-align: left;">TEXT</td>
+<td style="text-align: left;">Long text, no limit</td>
+<td style="text-align: left;">Author bios, descriptions</td>
+</tr>
+<tr>
+<td style="text-align: left;">DATE</td>
+<td style="text-align: left;">Just the date (2024-01-15)</td>
+<td style="text-align: left;">Issue dates, due dates</td>
+</tr>
+<tr>
+<td style="text-align: left;">DATETIME</td>
+<td style="text-align: left;">Date + time (2024-01-15 14:30:00)</td>
+<td style="text-align: left;">Access timestamps, reservation times</td>
+</tr>
+<tr>
+<td style="text-align: left;">DECIMAL(10,2)</td>
+<td style="text-align: left;">Precise numbers with 2 decimal places</td>
+<td style="text-align: left;">Fine amounts (₹49.50)</td>
+</tr>
+<tr>
+<td style="text-align: left;">BOOLEAN</td>
+<td style="text-align: left;">TRUE or FALSE</td>
+<td style="text-align: left;">IsActive flag</td>
+</tr>
+<tr>
+<td style="text-align: left;">ENUM</td>
+<td style="text-align: left;">One value from a predefined list</td>
+<td style="text-align: left;">Status fields ('Active', 'Returned', 'Overdue')</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-explain-the-schema-in-the-presentation">💬 How to Explain the Schema in the Presentation</h2>
+<blockquote>
+<p><em>"Our relational schema has 14 tables. 5 are independent master tables — Book, Author, Publisher, Category, and Member. 2 are junction tables that resolve many-to-many relationships. The remaining 7 are transaction/dependent tables. Every table has a primary key for entity integrity, foreign keys for referential integrity, and domain constraints like CHECK, UNIQUE, and DEFAULT to enforce our business rules at the database level."</em></p>
+</blockquote>
+<hr />
+<h1 id="anticipated-questions-answers">🎯 ANTICIPATED QUESTIONS &amp; ANSWERS</h1>
+<h3 id="q-why-did-you-separate-book-edition-and-copy-into-three-tables">Q: "Why did you separate Book, Edition, and Copy into three tables?"</h3>
+<blockquote>
+<p><strong>A:</strong> Because of normalization. A single book like "Harry Potter" can have multiple editions (1st edition, special edition), and each edition can have many physical copies. If we stored everything in one table, we'd duplicate the book title and ISBN for every single copy — that's data redundancy. Separating them achieves 3NF.</p>
+</blockquote>
+<h3 id="q-why-is-reservation-linked-to-book-and-not-copy">Q: "Why is Reservation linked to Book and not Copy?"</h3>
+<blockquote>
+<p><strong>A:</strong> Because when a member reserves, they want <em>any</em> available copy of that book, not a specific physical copy. The system assigns a specific copy when one becomes available.</p>
+</blockquote>
+<h3 id="q-why-does-fine-reference-both-issueid-and-memberid">Q: "Why does Fine reference both IssueID and MemberID?"</h3>
+<blockquote>
+<p><strong>A:</strong> <code>IssueID</code> tells us <em>which borrowing transaction</em> caused the fine. <code>MemberID</code> is technically redundant (you could get it from Issue → Member), but it's kept for <strong>query performance</strong> — you can directly find all fines for a member without joining through the Issue table.</p>
+</blockquote>
+<h3 id="q-whats-a-composite-primary-key">Q: "What's a composite primary key?"</h3>
+<blockquote>
+<p><strong>A:</strong> When a single column can't uniquely identify a row, you combine two or more columns. In <code>BookAuthor</code>, neither <code>BookID</code> alone nor <code>AuthorID</code> alone is unique (a book can have many authors, an author can write many books). But the <em>combination</em> <code>(BookID, AuthorID)</code> is always unique.</p>
+</blockquote>
+<h3 id="q-what-normalization-form-is-your-schema-in">Q: "What normalization form is your schema in?"</h3>
+<blockquote>
+<p><strong>A:</strong> Third Normal Form (3NF). Every non-key attribute depends on the key, the whole key, and nothing but the key. We've eliminated partial dependencies (via 2NF) and transitive dependencies (via 3NF).</p>
+</blockquote>
+<hr />
+<h1 id="quick-visual-summary">📊 QUICK VISUAL SUMMARY</h1>
+<pre class="codehilite"><code>THE DATA FLOW:
+
+  Book ──→ Edition ──→ Copy ──→ Issue ──→ Fine
+   │                              │          │
+   │                              └── Member ─┘
+   │                                   │
+   ├── Author (M:N via BookAuthor)     ├── Reservation
+   ├── Category (M:N via BookCategory) │
+   └── DigitalResource                 └── DigitalAccessLog
+            │
+            └── DigitalAccessLog
+</code></pre>
+
+<p><strong>Total: 14 entities, 18 relationships, 5 UNIQUE constraints, 5 CHECK constraints, 15 foreign key links.</strong></p>
+<hr />
+<blockquote>
+<p>[!TIP]<br />
+<strong>Presentation tip:</strong> Start with the Problem Statement to hook your audience, then show the ER Diagram to explain your design visually, and finally walk through the Schema to show how it all translates into actual database tables. The flow is: <strong>Why → What → How</strong>.</p>
+</blockquote>
+</body>
+</html>
